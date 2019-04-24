@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <vector>
+#include <errno.h>
 
 #include "ngx_c_conf.h"
 #include "ngx_func.h"
@@ -10,7 +11,14 @@ CConfig* CConfig::m_instance = NULL;
 
 CConfig::CConfig() {}
 
-CConfig::~CConfig() {}
+CConfig::~CConfig()
+{
+    std::vector<LPCConfItem>::iterator pos;
+    for (pos = m_ConfigItemList.begin(); pos != m_ConfigItemList.end(); ++pos)
+    {
+        delete (*pos);
+    }
+}
 
 bool CConfig::Load(const char* pconfName)
 {
