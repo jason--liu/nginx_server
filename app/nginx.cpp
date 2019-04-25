@@ -1,4 +1,4 @@
-﻿#include <stdio.h>
+#include <stdio.h>
 #include <unistd.h>
 #include <cstdlib>
 #include <errno.h>
@@ -34,11 +34,11 @@ int main(int argc, char* const* argv)
     }
 #endif
 
-    for(;;)
-    {
-        sleep(1); //休息1秒
-        printf("休息1秒\n");
-    }
+    // for (;;)
+    // {
+    //     sleep(1); //休息1秒
+    //     printf("休息1秒\n");
+    // }
     CConfig* p_config = CConfig::GetInstance();
     if (p_config->Load("nginx.conf") == false)
     {
@@ -51,5 +51,11 @@ int main(int argc, char* const* argv)
     const char* pDBInfo = p_config->GetString("DBInfo");
     if (pDBInfo)
         printf("DBInfo=%s\n", pDBInfo);
+
+    if (gp_envmem)
+    {
+        delete[] gp_envmem;
+        gp_envmem = NULL;
+    }
     return 0;
 }
