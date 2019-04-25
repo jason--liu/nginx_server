@@ -7,4 +7,8 @@ typedef struct {
 
 } CConfItem, *LPCConfItem;
 
+extern char** g_os_argv;
+extern char* gp_envmem;
+extern int g_environlen;
+
 #endif

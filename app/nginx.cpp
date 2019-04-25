@@ -7,18 +7,38 @@
 #include "ngx_signal.h"
 #include "ngx_c_conf.h"
 
+char** g_os_argv;          // command line args
+char* gp_envmem = nullptr; // point to our own env memrory
+int g_environlen = 0;      // length of envmem
+
 int main(int argc, char* const* argv)
 {
-    // myconf();
     (void)argc;
-    (void)argv;
-    // mysignal();
+    g_os_argv = (char**)argv;
 
-    /*for(;;)
+    // move the environment memrory
+    ngx_init_setproctitle();
+    ngx_setproctile("nginx: new title");
+
+#if 0
+    for (int i = 0; argv[i]; i++)
+    {
+        printf("argv[%d]address=%x       \n", i, (unsigned int)((unsigned long)&(argv[i])));
+        printf("argv[%d]content=%s\n", i, argv[i]);
+    }
+
+    for (int i = 0; environ[i]; i++)
+    {
+        printf("environ[%d]address=%x      \n", i, (unsigned int)((unsigned long)&(environ[i])));
+        printf("environ[%d]content=%s\n", i, environ[i]);
+    }
+#endif
+
+    for(;;)
     {
         sleep(1); //休息1秒
         printf("休息1秒\n");
-    }*/
+    }
     CConfig* p_config = CConfig::GetInstance();
     if (p_config->Load("nginx.conf") == false)
     {
