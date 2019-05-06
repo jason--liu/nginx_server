@@ -18,7 +18,7 @@ LD = ld
 export CC LD
 
 # CFLAGS := -Wall -std=c++11
-COMPILE_FLAGS = -std=c++11 -Wall -Wextra
+COMPILE_FLAGS = -Wall -Wextra
 INCLUDE = -I$(shell pwd)/_include
 #CFLAGS += -I _include/
 
@@ -38,9 +38,9 @@ obj-y += app/
 obj-y += signal/
 
 all :
+	ctags-exuberant -e -R .
 	make -C ./ -f $(TOPDIR)/Makefile.build
 	$(CC) $(LDFLAGS) -o $(TARGET) built-in.o
-	ctags-exuberant -e -R .
 
 
 release : export CFLAGS := -O2 $(COMPILE_FLAGS)

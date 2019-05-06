@@ -17,7 +17,7 @@ void ngx_init_setproctitle()
     // end of environ is nullptr
     for (i = 0; environ[i]; i++)
     {
-        g_environlen += strlen(environ[i]) + 1; // don't for '\0', it use memory
+        g_environlen += strlen(environ[i]) + 1; // don't forget '\0', it use memory
     }
 
     gp_envmem = new char[g_environlen];

@@ -7,16 +7,33 @@
 #include "ngx_signal.h"
 #include "ngx_c_conf.h"
 
-char** g_os_argv;          // command line args
-char* gp_envmem = nullptr; // point to our own env memrory
-int g_environlen = 0;      // length of envmem
+static void freeresouce();
+
+pid_t ngx_pid;
+
+char** g_os_argv;       // command line args
+char* gp_envmem = NULL; // point to our own env memrory
+int g_environlen = 0;   // length of envmem
 
 int main(int argc, char* const* argv)
 {
     (void)argc;
+    // 1.
     g_os_argv = (char**)argv;
+    ngx_pid = getpid();
 
-    // move the environment memrory
+    // 2.read config first
+    CConfig* p_config = CConfig::GetInstance();
+    if (p_config->Load("nginx.conf") == false)
+    {
+        ngx_log_stderr(0, "read config failed\n");
+        goto lblexit;
+    }
+
+    // 3.some init functions
+    ngx_log_init();
+
+    // 4.other modules move the environment memrory
     ngx_init_setproctitle();
     ngx_setproctile("nginx: new title");
 
@@ -39,23 +56,24 @@ int main(int argc, char* const* argv)
     //     sleep(1); //休息1秒
     //     printf("休息1秒\n");
     // }
-    CConfig* p_config = CConfig::GetInstance();
-    if (p_config->Load("nginx.conf") == false)
-    {
-        printf("read config failed\n");
-        exit(1);
-    }
 
-    int port = p_config->GetIntDefault("ListenPort", 12);
-    printf("port=%d\n", port);
-    const char* pDBInfo = p_config->GetString("DBInfo");
-    if (pDBInfo)
-        printf("DBInfo=%s\n", pDBInfo);
+    return 0;
+lblexit:
+    freeresouce();
+    return 0;
+}
 
+static void freeresouce()
+{
     if (gp_envmem)
     {
         delete[] gp_envmem;
         gp_envmem = NULL;
     }
-    return 0;
+
+    if (ngx_log.fd != STDERR_FILENO && ngx_log.fd != -1)
+    {
+        close(ngx_log.fd);
+        ngx_log.fd = -1;
+    }
 }
