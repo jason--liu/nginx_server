@@ -36,6 +36,7 @@ TARGET := nginx
 
 obj-y += app/
 obj-y += signal/
+obj-y += proc/
 
 all :
 	ctags-exuberant -e -R .
