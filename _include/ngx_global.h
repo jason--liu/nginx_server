@@ -23,7 +23,8 @@ extern pid_t     ngx_pid;
 extern ngx_log_t ngx_log;
 
 // process
-extern pid_t ngx_pid;     // current process id
-extern pid_t ngx_parent;  // parent process id
-extern int   ngx_process; // type of process
+extern pid_t ngx_pid;      // current process id
+extern pid_t ngx_parent;   // parent process id
+extern int   ngx_process;  // type of process
+extern int   g_daemonized; // daemon process flag
 #endif

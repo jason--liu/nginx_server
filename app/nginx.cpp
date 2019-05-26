@@ -18,9 +18,10 @@ char** g_os_argv;        // command line args
 char*  gp_envmem = NULL; // point to our own env memrory
 int    g_os_argc;
 
-pid_t ngx_pid;     // current process id
-pid_t ngx_parent;  // parent process id
-int   ngx_process; // type of process
+pid_t ngx_pid;          // current process id
+pid_t ngx_parent;       // parent process id
+int   ngx_process;      // type of process
+int   g_daemonized = 0; // daemon process flag
 
 int main(int argc, char* const* argv)
 {
@@ -65,7 +66,23 @@ int main(int argc, char* const* argv)
     // 4.other modules move the environment memrory
     ngx_init_setproctitle();
 
-    // start master process cycle
+    // 5.create daemon
+    if (p_config->GetIntDefault("Daemon", 0) == 1)
+    {
+        int ret = ngx_daemon();
+        if (ret == -1)
+        {
+            exitcode = 1;
+            goto lblexit;
+        }
+        if (ret == 1)
+        {
+            freeresouce();
+            return 0;
+        }
+    }
+
+    // 6.start master process cycle
     ngx_master_process_cycle();
 
 #if 0

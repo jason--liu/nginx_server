@@ -1,4 +1,4 @@
-﻿#ifndef __NGX_FUNC_H__
+#ifndef __NGX_FUNC_H__
 #define __NGX_FUNC_H__
 //函数声明
 typedef unsigned char u_char;
@@ -25,4 +25,5 @@ int ngx_init_signals();
 
 
 void ngx_master_process_cycle();
+int ngx_daemon();
 #endif
