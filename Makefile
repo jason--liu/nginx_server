@@ -37,9 +37,10 @@ TARGET := nginx
 obj-y += app/
 obj-y += signal/
 obj-y += proc/
+obj-y += net/
 
 all :
-	ctags-exuberant -e -R .
+	#ctags-exuberant -e -R .
 	make -C ./ -f $(TOPDIR)/Makefile.build
 	$(CC) $(LDFLAGS) -o $(TARGET) built-in.o
 

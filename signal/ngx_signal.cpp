@@ -66,8 +66,6 @@ static void ngx_signal_handler(int signo, siginfo_t* siginfo, void* ucontext)
     char*         action;
     (void)ucontext;
 
-    ngx_log_stderr(0, "receive signal %d pid = %P",signo, getpid());
-
     for (sig = signals; sig->signo != 0; sig++)
     {
         if (sig->signo == signo)

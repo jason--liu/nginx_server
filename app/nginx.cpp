@@ -18,10 +18,11 @@ char** g_os_argv;        // command line args
 char*  gp_envmem = NULL; // point to our own env memrory
 int    g_os_argc;
 
-pid_t ngx_pid;          // current process id
-pid_t ngx_parent;       // parent process id
-int   ngx_process;      // type of process
-int   g_daemonized = 0; // daemon process flag
+pid_t   ngx_pid;          // current process id
+pid_t   ngx_parent;       // parent process id
+int     ngx_process;      // type of process
+int     g_daemonized = 0; // daemon process flag
+CSocket g_socket;         // socket global object
 
 int main(int argc, char* const* argv)
 {
@@ -62,7 +63,11 @@ int main(int argc, char* const* argv)
         exitcode = 0;
         goto lblexit;
     }
-
+    if (g_socket.Initialize() == false)
+    {
+        exitcode = 1;
+        goto lblexit;
+    }
     // 4.other modules move the environment memrory
     ngx_init_setproctitle();
 

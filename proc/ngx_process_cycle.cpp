@@ -15,8 +15,8 @@
 static u_char master_process[] = "master process";
 
 static void ngx_start_worker_process(int threadnums);
-static void ngx_worker_process_cycle(int inum, const char *pprocname);
-static int ngx_spawn_process(int inum, const char *pprocname);
+static void ngx_worker_process_cycle(int inum, const char* pprocname);
+static int ngx_spawn_process(int inum, const char* pprocname);
 static void ngx_worker_process_init(int inum);
 
 void ngx_master_process_cycle()
@@ -45,7 +45,7 @@ void ngx_master_process_cycle()
     if (size < 1000)
     {
         char title[1000] = {0};
-        strcpy(title, (const char *)master_process);
+        strcpy(title, (const char*)master_process);
         strcat(title, " ");
         for (i = 0; i < g_os_argc; i++)
         {
@@ -55,7 +55,7 @@ void ngx_master_process_cycle()
         ngx_log_error_core(NGX_LOG_NOTICE, 0, "%s %P process start and run......!", title, ngx_pid);
     }
 
-    CConfig *p_config    = CConfig::GetInstance();
+    CConfig* p_config    = CConfig::GetInstance();
     int      workprocess = p_config->GetIntDefault("WorkProcess", 1);
 
     ngx_start_worker_process(workprocess);
@@ -79,7 +79,7 @@ static void ngx_start_worker_process(int threadnums)
     return;
 }
 
-static int ngx_spawn_process(int inum, const char *pprocname)
+static int ngx_spawn_process(int inum, const char* pprocname)
 {
     pid_t pid;
     pid = fork();
@@ -98,7 +98,7 @@ static int ngx_spawn_process(int inum, const char *pprocname)
     }
     return pid;
 }
-static void ngx_worker_process_cycle(int inum, const char *pprocname)
+static void ngx_worker_process_cycle(int inum, const char* pprocname)
 {
     ngx_process = NGX_PROCESS_WORKER;
     ngx_worker_process_init(inum);
@@ -107,8 +107,8 @@ static void ngx_worker_process_cycle(int inum, const char *pprocname)
 
     for (;;)
     {
-        sleep(1);
-        ngx_log_stderr(0, "this is child process %d pid=%P", inum, getpid());
+        // ngx_log_stderr(0, "this is child process %d pid=%P", inum, getpid());
+        ngx_process_events_and_timers();
     }
     return;
 }
@@ -120,6 +120,8 @@ static void ngx_worker_process_init(int inum)
 
     if (sigprocmask(SIG_SETMASK, &set, NULL) == -1)
         ngx_log_error_core(NGX_LOG_ALERT, errno, "ngx worker process sigprocmask failed");
+
+    g_socket.ngx_epoll_init();
 
     return;
 }
