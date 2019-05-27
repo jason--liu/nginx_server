@@ -38,6 +38,7 @@ obj-y += app/
 obj-y += signal/
 obj-y += proc/
 obj-y += net/
+obj-y += misc/
 
 all :
 	#ctags-exuberant -e -R .

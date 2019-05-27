@@ -27,6 +27,9 @@ CSocket::CSocket()
     m_epollhandle       = -1;
     m_pconnections      = NULL;
     m_pfree_connections = NULL;
+
+    m_iLenPkgHeader = sizeof(COMM_PKG_HEADER);
+    m_iLenMsgHeader = sizeof(STRUC_MSG_HEADER);
 }
 
 CSocket::~CSocket()

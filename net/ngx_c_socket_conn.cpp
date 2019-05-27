@@ -33,9 +33,14 @@ lpngx_connection_t CSocket::ngx_get_connection(int isock)
     uint64_t  iCurrsequence = c->iCurrsequence;
 
     memset(c, 0, sizeof(ngx_connection_t));
-    c->fd            = isock;
-    c->instance      = !instance;
-    c->iCurrsequence = iCurrsequence;
+    c->fd             = isock;
+    c->curStat        = _PKG_HD_INIT;            // receive head first
+    c->prevbuf        = c->dataHeadInfo;         // restore pkg head
+    c->irecvlen       = sizeof(COMM_PKG_HEADER); // head of pkg
+    c->ifnewrecvMem   = false;                   // we didn't malloc memory yet
+    c->pnewMemPointer = NULL;
+    c->instance       = !instance;
+    c->iCurrsequence  = iCurrsequence;
     ++c->iCurrsequence;
     return c;
 }
@@ -47,5 +52,17 @@ void CSocket::ngx_free_connection(lpngx_connection_t c)
     ++c->iCurrsequence;
     m_pfree_connections = c;
     ++m_free_connection_n;
+    return;
+}
+
+void CSocket::ngx_close_connection(lpngx_connection_t c)
+{
+    int fd = c->fd;
+    if (close(fd) == -1)
+    {
+        ngx_log_error_core(NGX_LOG_ALERT, errno, "ngx_close_accepted_connection close failed");
+    }
+    c->fd = -1;
+    ngx_free_connection(c);
     return;
 }

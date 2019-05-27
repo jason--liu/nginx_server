@@ -85,7 +85,7 @@ void CSocket::ngx_event_accept(lpngx_connection_t oldc)
         {
             if (setnonblocking(s) == false)
             {
-                ngx_close_accepted_connection(newc);
+                ngx_close_connection(newc);
                 return;
             }
         }
@@ -94,7 +94,7 @@ void CSocket::ngx_event_accept(lpngx_connection_t oldc)
         newc->rhandler  = &CSocket::ngx_wait_request_handler;
         if (ngx_epoll_add_event(s, 1, 0, 0, EPOLL_CTL_ADD, newc) == -1)
         {
-            ngx_close_accepted_connection(newc);
+            ngx_close_connection(newc);
             return;
         }
         break;
@@ -102,14 +102,3 @@ void CSocket::ngx_event_accept(lpngx_connection_t oldc)
     return;
 }
 
-void CSocket::ngx_close_accepted_connection(lpngx_connection_t c)
-{
-    int fd = c->fd;
-    c->fd = -1;
-    ngx_free_connection(c);
-    if (close(fd) == -1)
-    {
-        ngx_log_error_core(NGX_LOG_ALERT, errno, "ngx_close_accepted_connection close failed");
-    }
-    return;
-}

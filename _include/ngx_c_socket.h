@@ -2,8 +2,10 @@
 #define NGX_C_SOCKET_HH_
 
 #include <vector>
+#include <list>
 #include <sys/epoll.h>
 #include <sys/socket.h>
+#include "ngx_comm.h"
 
 #define NGX_LISTEN_BACKLOG 511
 #define NGX_MAX_EVENTS 512
@@ -33,8 +35,22 @@ struct ngx_connection_s {
     ngx_event_handler_pt rhandler; // read event process  function
     ngx_event_handler_pt whandler; // write event process function
 
+    // package relative
+    unsigned char curStat;                      // pkg state
+    char          dataHeadInfo[_DATA_BUFSIZE_]; // to store pkg head
+    char*         prevbuf;                      // point to receive buffer
+    unsigned int  irecvlen;                     // how much data want to receive
+
+    bool  ifnewrecvMem;
+    char* pnewMemPointer;
+
     lpngx_connection_t data;
 };
+
+typedef struct _STRUC_MSG_HEADER {
+    lpngx_connection_t pConn; // to keep the connection
+    uint64_t           iCurrsequence;
+} STRUC_MSG_HEADER, *LPSTRUC_MSG_HEADER;
 
 class CSocket {
 public:
@@ -55,9 +71,16 @@ private:
     void ngx_close_listening_sockets();
     bool setnonblocking(int sockfd); // set non-blocking socket fd
 
-    void ngx_event_accept(lpngx_connection_t oldc);           // create new connection
-    void ngx_wait_request_handler(lpngx_connection_t c);      // process function for EPOLLIN
-    void ngx_close_accepted_connection(lpngx_connection_t c); // resource release
+    void ngx_event_accept(lpngx_connection_t oldc);      // create new connection
+    void ngx_wait_request_handler(lpngx_connection_t c); // process function for EPOLLIN
+    void ngx_close_connection(lpngx_connection_t c);     // resource release
+
+    ssize_t recvproc(lpngx_connection_t c, char* buff, ssize_t buflen); // receive from client
+    void ngx_wait_request_handler_proc_p1(lpngx_connection_t c);        // handle pkg head
+    void ngx_wait_request_handler_proc_plast(lpngx_connection_t c);     // handle total pkg
+    void inMsgRecvQueue(char* buf);                                     // put received msg to queue
+    void tmpoutMsgRecvQueue();
+    void clearMsgRecvQueue();
 
     lpngx_connection_t ngx_get_connection(int isock); // get a free connection from pool
     void ngx_free_connection(lpngx_connection_t c);   // return c to connection pool
@@ -74,6 +97,10 @@ private:
 
     std::vector<lpngx_listening_t> m_ListenSocketList; // listening socket queue
     struct epoll_event             m_events[NGX_MAX_EVENTS];
+
+    size_t           m_iLenPkgHeader; // sizeof(COMM_PKG_HEADER)
+    size_t           m_iLenMsgHeader; // sizeof(STRUC_MSG_HEADER)
+    std::list<char*> m_MsgRecvQueue;
 };
 
 #endif
