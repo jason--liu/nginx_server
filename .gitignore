@@ -1,5 +1,6 @@
 *.o
 *.d
+*.out
 TAGS
 nginx
 .*
