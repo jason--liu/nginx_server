@@ -22,7 +22,7 @@
 void CSocket::ngx_wait_request_handler(lpngx_connection_t c)
 {
     ssize_t reco = recvproc(c, c->prevbuf, c->irecvlen);
-    if (recv <= 0)
+    if (reco <= 0)
     {
         // we have handled it
         return;
@@ -31,8 +31,46 @@ void CSocket::ngx_wait_request_handler(lpngx_connection_t c)
     {
         if (reco == m_iLenPkgHeader)
         {
+            ngx_wait_request_handler_proc_p1(c);
+        } else
+        {
+            c->curStat  = _PKG_HD_RECVING;
+            c->prevbuf  = c->prevbuf + reco;
+            c->irecvlen = c->irecvlen - reco;
+        }
+    } else if (c->curStat == _PKG_HD_RECVING)
+    {
+        if (c->irecvlen == reco)
+        {
+            ngx_wait_request_handler_proc_p1(c);
+        } else
+        {
+            c->prevbuf  = c->prevbuf + reco;
+            c->irecvlen = c->irecvlen - reco;
+        }
+    } else if (c->curStat == _PKG_BD_INIT)
+    {
+        if (reco == c->irecvlen)
+        {
+            ngx_wait_request_handler_proc_plast(c);
+        } else
+        {
+            c->curStat  = _PKG_BD_RECVING;
+            c->prevbuf  = c->prevbuf + reco;
+            c->irecvlen = c->irecvlen - reco;
+        }
+    } else if (c->curStat == _PKG_BD_RECVING)
+    {
+        if (c->irecvlen == reco)
+        {
+            ngx_wait_request_handler_proc_plast(c);
+        } else
+        {
+            c->prevbuf  = c->prevbuf + reco;
+            c->irecvlen = c->irecvlen - reco;
         }
     }
+    return;
 
 #if 0
     // ET test
@@ -123,7 +161,7 @@ void CSocket::ngx_wait_request_handler_proc_p1(lpngx_connection_t c)
         c->irecvlen = m_iLenPkgHeader;
     } else
     {
-        char* pTmpBuffer  = (char*)p_memory->AllocMemory(m_iLenMsgHeader, false);
+        char* pTmpBuffer  = (char*)p_memory->AllocMemory(m_iLenMsgHeader + e_pkgLen, false);
         c->ifnewrecvMem   = true; // flag we have malloced memory
         c->pnewMemPointer = pTmpBuffer;
 
@@ -149,10 +187,37 @@ void CSocket::ngx_wait_request_handler_proc_p1(lpngx_connection_t c)
 void CSocket::ngx_wait_request_handler_proc_plast(lpngx_connection_t c)
 {
     // TODO
-    // inMsgRecvQueue(c->pnewMemPointer);
+    inMsgRecvQueue(c->pnewMemPointer);
     c->ifnewrecvMem   = false; // let yewu luoji handle mem
     c->pnewMemPointer = NULL;
     c->curStat        = _PKG_HD_INIT;
     c->prevbuf        = c->dataHeadInfo;
     c->irecvlen       = m_iLenPkgHeader;
+}
+
+void CSocket::inMsgRecvQueue(char* buf)
+{
+    m_MsgRecvQueue.push_back(buf);
+    ngx_log_stderr(0, "Nice, we received a full package");
+}
+
+void CSocket::tmpoutMsgRecvQueue()
+{
+    if (m_MsgRecvQueue.empty())
+        return;
+
+    int size = m_MsgRecvQueue.size();
+    if (size < 1000)
+        return;
+
+    CMemory* p_memory = CMemory::GetInstance();
+    int      cha      = size - 500;
+
+    for (int i = 0; i < cha; i++)
+    {
+        char* tmpBuf = m_MsgRecvQueue.front();
+        m_MsgRecvQueue.pop_front();
+        p_memory->FreeMemory(tmpBuf);
+    }
+    return;
 }
