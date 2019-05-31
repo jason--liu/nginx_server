@@ -7,7 +7,7 @@ CMemory *CMemory::m_instance=NULL; //?
 
 void *CMemory::AllocMemory( int memCount, bool ifmemset )
 {
-    void *tmpData=(void *)new char(memCount);
+    void *tmpData=(void *)new char[memCount];
     if(ifmemset)
         memset(tmpData, 0, memCount);
     return tmpData;
