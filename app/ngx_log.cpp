@@ -53,9 +53,8 @@ ngx_log_t ngx_log;
    */
 void ngx_log_stderr(int err, const char* fmt, ...)
 {
-    va_list args; //创建一个va_list类型变量
-    u_char
-        errstr[NGX_MAX_ERROR_STR + 1]; // 2048  -- ************ +1是我自己填的，感谢官方写法有点小瑕疵，所以动手调整一下
+    va_list args;                          //创建一个va_list类型变量
+    u_char  errstr[NGX_MAX_ERROR_STR + 1]; // 2048  -- ************ +1是我自己填的，感谢官方写法有点小瑕疵，所以动手调整一下
     u_char *p, *last;
 
     memset(errstr, 0,
@@ -93,8 +92,14 @@ void ngx_log_stderr(int err, const char* fmt, ...)
     //测试代码：
     // printf("ngx_log_stderr()处理结果=%s\n",errstr);
     // printf("ngx_log_stderr()处理结果=%s",errstr);
+    if (ngx_log.fd > STDERR_FILENO)
+    {
+        err =0;
+        p--;*p=0;
+        ngx_log_error_core(NGX_LOG_STDERR, err, (const char*)errstr);
+    }
 
-    return;
+        return;
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -106,16 +111,16 @@ void ngx_log_stderr(int err, const char* fmt, ...)
 u_char* ngx_log_errno(u_char* buf, u_char* last, int err)
 {
     //以下代码是我自己改造，感觉作者的代码有些瑕疵
-    char* perrorinfo = strerror(err); //根据资料不会返回NULL;
-    size_t len = strlen(perrorinfo);
+    char*  perrorinfo = strerror(err); //根据资料不会返回NULL;
+    size_t len        = strlen(perrorinfo);
 
     //然后我还要插入一些字符串： (%d:)
     char leftstr[10] = {0};
     sprintf(leftstr, " (%d: ", err);
     size_t leftlen = strlen(leftstr);
 
-    char rightstr[] = ") ";
-    size_t rightlen = strlen(rightstr);
+    char   rightstr[] = ") ";
+    size_t rightlen   = strlen(rightstr);
 
     size_t extralen = leftlen + rightlen; //左右的额外宽度
     if ((buf + len + extralen) < last)
@@ -144,10 +149,10 @@ void ngx_log_error_core(int level, int err, const char* fmt, ...)
     last = errstr + NGX_MAX_ERROR_STR;
 
     struct timeval tv;
-    struct tm tm;
-    time_t sec; //秒
-    u_char* p;  //指向当前要拷贝数据到其中的内存位置
-    va_list args;
+    struct tm      tm;
+    time_t         sec; //秒
+    u_char*        p;   //指向当前要拷贝数据到其中的内存位置
+    va_list        args;
 
     memset(&tv, 0, sizeof(struct timeval));
     memset(&tm, 0, sizeof(struct tm));
@@ -164,11 +169,9 @@ void ngx_log_error_core(int level, int err, const char* fmt, ...)
         (u_char*)-1, //若用一个u_char *接一个 (u_char *)-1,则 得到的结果是 0xffffffff....，这个值足够大
         "%4d/%02d/%02d %02d:%02d:%02d", //格式是 年/月/日 时:分:秒
         tm.tm_year, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
-    p = ngx_cpymem(
-        errstr, strcurrtime, strlen((const char*)strcurrtime)); //日期增加进来，得到形如：     2019/01/08 20:26:07
+    p = ngx_cpymem(errstr, strcurrtime, strlen((const char*)strcurrtime)); //日期增加进来，得到形如：     2019/01/08 20:26:07
     p = ngx_slprintf(p, last, " [%s] ", err_levels[level]); //日志级别增加进来，得到形如：  2019/01/08 20:26:07 [crit]
-    p = ngx_slprintf(
-        p, last, "%P: ", ngx_pid); //支持%P格式，进程id增加进来，得到形如：   2019/01/08 20:50:15 [crit] 2037:
+    p = ngx_slprintf(p, last, "%P: ", ngx_pid); //支持%P格式，进程id增加进来，得到形如：   2019/01/08 20:50:15 [crit] 2037:
 
     va_start(args, fmt);                   //使args指向起始的参数
     p = ngx_vslprintf(p, last, fmt, args); //把fmt和args参数弄进去，组合出来这个字符串
@@ -228,11 +231,11 @@ void ngx_log_error_core(int level, int err, const char* fmt, ...)
 void ngx_log_init()
 {
     u_char* plogname = NULL;
-    size_t nlen;
+    size_t  nlen;
 
     //从配置文件中读取和日志相关的配置信息
     CConfig* p_config = CConfig::GetInstance();
-    plogname = (u_char*)p_config->GetString("Log");
+    plogname          = (u_char*)p_config->GetString("Log");
     if (plogname == NULL)
     {
         //没读到，就要给个缺省的路径文件名了
