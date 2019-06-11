@@ -8,6 +8,7 @@
 #include "ngx_signal.h"
 #include "ngx_macro.h"
 #include "ngx_c_conf.h"
+#include "ngx_c_threadpool.h"
 
 static void freeresouce();
 
@@ -18,11 +19,12 @@ char** g_os_argv;        // command line args
 char*  gp_envmem = NULL; // point to our own env memrory
 int    g_os_argc;
 
-pid_t   ngx_pid;          // current process id
-pid_t   ngx_parent;       // parent process id
-int     ngx_process;      // type of process
-int     g_daemonized = 0; // daemon process flag
-CSocket g_socket;         // socket global object
+pid_t       ngx_pid;          // current process id
+pid_t       ngx_parent;       // parent process id
+int         ngx_process;      // type of process
+int         g_daemonized = 0; // daemon process flag
+CSocket     g_socket;         // socket global object
+CThreadPool g_threadpool;     // global thread pool obj
 
 int main(int argc, char* const* argv)
 {

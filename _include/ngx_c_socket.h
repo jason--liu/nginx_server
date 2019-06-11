@@ -59,6 +59,8 @@ public:
 
 public:
     virtual bool Initialize();
+    char*        outMsgRecvQueue();
+    virtual void threadRecvProcFunc(char* pMsgBuf);
 
 public:
     int ngx_epoll_init(); // init function
@@ -78,7 +80,7 @@ private:
     ssize_t recvproc(lpngx_connection_t c, char* buff, ssize_t buflen); // receive from client
     void ngx_wait_request_handler_proc_p1(lpngx_connection_t c);        // handle pkg head
     void ngx_wait_request_handler_proc_plast(lpngx_connection_t c);     // handle total pkg
-    void inMsgRecvQueue(char* buf);                                     // put received msg to queue
+    void inMsgRecvQueue(char* buf, int& irmqc);                         // put received msg to queue
     void tmpoutMsgRecvQueue();
     void clearMsgRecvQueue();
 
@@ -98,9 +100,12 @@ private:
     std::vector<lpngx_listening_t> m_ListenSocketList; // listening socket queue
     struct epoll_event             m_events[NGX_MAX_EVENTS];
 
-    size_t           m_iLenPkgHeader; // sizeof(COMM_PKG_HEADER)
-    size_t           m_iLenMsgHeader; // sizeof(STRUC_MSG_HEADER)
+    size_t m_iLenPkgHeader; // sizeof(COMM_PKG_HEADER)
+    size_t m_iLenMsgHeader; // sizeof(STRUC_MSG_HEADER)
+
     std::list<char*> m_MsgRecvQueue;
+    int              m_iRecvMsgQueueCount;
+    pthread_mutex_t  m_recvMessageQueueMutex;
 };
 
 #endif

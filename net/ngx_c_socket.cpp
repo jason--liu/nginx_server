@@ -30,6 +30,9 @@ CSocket::CSocket()
 
     m_iLenPkgHeader = sizeof(COMM_PKG_HEADER);
     m_iLenMsgHeader = sizeof(STRUC_MSG_HEADER);
+
+    m_iRecvMsgQueueCount = 0;
+    pthread_mutex_init(&m_recvMessageQueueMutex, NULL);
 }
 
 CSocket::~CSocket()

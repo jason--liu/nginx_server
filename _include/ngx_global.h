@@ -1,6 +1,7 @@
 #ifndef NGX_GLOBAL_HH_
 #define NGX_GLOBAL_HH_
 #include "ngx_c_socket.h"
+#include "ngx_c_threadpool.h"
 
 typedef struct {
     char ItemName[50];
@@ -24,9 +25,10 @@ extern pid_t     ngx_pid;
 extern ngx_log_t ngx_log;
 
 // process
-extern pid_t   ngx_pid;      // current process id
-extern pid_t   ngx_parent;   // parent process id
-extern int     ngx_process;  // type of process
-extern int     g_daemonized; // daemon process flag
-extern CSocket g_socket;     // socket global object
+extern pid_t       ngx_pid;      // current process id
+extern pid_t       ngx_parent;   // parent process id
+extern int         ngx_process;  // type of process
+extern int         g_daemonized; // daemon process flag
+extern CSocket     g_socket;     // socket global object
+extern CThreadPool g_threadpool; // global thread pool obj
 #endif

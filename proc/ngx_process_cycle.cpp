@@ -121,6 +121,11 @@ static void ngx_worker_process_init(int inum)
     if (sigprocmask(SIG_SETMASK, &set, NULL) == -1)
         ngx_log_error_core(NGX_LOG_ALERT, errno, "ngx worker process sigprocmask failed");
 
+    CConfig* p_config  = CConfig::GetInstance();
+    int      threadNum = p_config->GetIntDefault("ProcMsgRecvWorkThreadCount", 5);
+    if (g_threadpool.Create(threadNum) == false)
+        exit(-2);
+
     g_socket.ngx_epoll_init();
 
     return;

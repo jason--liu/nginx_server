@@ -18,11 +18,11 @@ LD = ld
 export CC LD
 
 # CFLAGS := -Wall -std=c++11
-COMPILE_FLAGS = -Wall -Wextra
+COMPILE_FLAGS = -Wall -Wextra -std=c++11
 INCLUDE = -I$(shell pwd)/_include
 #CFLAGS += -I _include/
 
-LDFLAGS :=
+LDFLAGS := -lpthread
 
 # export CFLAGS LDFLAGS INCLUDE
 export LDFLAGS INCLUDE

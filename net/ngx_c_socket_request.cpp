@@ -18,6 +18,7 @@
 #include "ngx_func.h"
 #include "ngx_c_socket.h"
 #include "ngx_c_memory.h"
+#include "ngx_c_lockmutex.h"
 
 void CSocket::ngx_wait_request_handler(lpngx_connection_t c)
 {
@@ -186,19 +187,36 @@ void CSocket::ngx_wait_request_handler_proc_p1(lpngx_connection_t c)
 }
 void CSocket::ngx_wait_request_handler_proc_plast(lpngx_connection_t c)
 {
-    // TODO
-    inMsgRecvQueue(c->pnewMemPointer);
+    int irmqc = 0;
+    inMsgRecvQueue(c->pnewMemPointer, irmqc);
+
+    g_threadpool.Call(irmqc);
     c->ifnewrecvMem   = false; // let yewu luoji handle mem
     c->pnewMemPointer = NULL;
     c->curStat        = _PKG_HD_INIT;
     c->prevbuf        = c->dataHeadInfo;
     c->irecvlen       = m_iLenPkgHeader;
+    return;
 }
 
-void CSocket::inMsgRecvQueue(char* buf)
+void CSocket::inMsgRecvQueue(char* buf, int& irmqc)
 {
+    CLock lock(&m_recvMessageQueueMutex);
     m_MsgRecvQueue.push_back(buf);
+    m_iRecvMsgQueueCount++;
     ngx_log_stderr(0, "Nice, we received a full package");
+}
+
+char* CSocket::outMsgRecvQueue()
+{
+    CLock lock(&m_recvMessageQueueMutex);
+    if (m_MsgRecvQueue.empty())
+        return NULL;
+
+    char* sTmpMsgBuf = m_MsgRecvQueue.front();
+    m_MsgRecvQueue.pop_front();
+    m_iRecvMsgQueueCount--;
+    return sTmpMsgBuf;
 }
 
 void CSocket::tmpoutMsgRecvQueue()
