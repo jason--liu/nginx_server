@@ -185,6 +185,7 @@ void CSocket::ngx_wait_request_handler_proc_p1(lpngx_connection_t c)
     }
     return;
 }
+
 void CSocket::ngx_wait_request_handler_proc_plast(lpngx_connection_t c)
 {
     int irmqc = 0;
@@ -237,5 +238,10 @@ void CSocket::tmpoutMsgRecvQueue()
         m_MsgRecvQueue.pop_front();
         p_memory->FreeMemory(tmpBuf);
     }
+    return;
+}
+
+void CSocket::threadRecvProcFunc(char* pMsgBuf)
+{
     return;
 }

@@ -22,13 +22,13 @@ COMPILE_FLAGS = -Wall -Wextra -std=c++11
 INCLUDE = -I$(shell pwd)/_include
 #CFLAGS += -I _include/
 
-LDFLAGS := -lpthread
+LDFLAGS := -pthread
 
 # export CFLAGS LDFLAGS INCLUDE
 export LDFLAGS INCLUDE
 
 TOPDIR := $(shell pwd)
-#TOPDIR := . 
+#TOPDIR := .
 export TOPDIR
 
 TARGET := nginx
@@ -40,16 +40,16 @@ obj-y += proc/
 obj-y += net/
 obj-y += misc/
 
+debug : export  CFLAGS := -DDEBUG -g $(COMPILE_FLAGS)
+debug : all
+
+release : export CFLAGS := -O2 $(COMPILE_FLAGS)
+release : all
+
 all :
 	#ctags-exuberant -e -R .
 	make -C ./ -f $(TOPDIR)/Makefile.build
 	$(CC) $(LDFLAGS) -o $(TARGET) built-in.o
-
-
-release : export CFLAGS := -O2 $(COMPILE_FLAGS)
-release : all
-debug : export  CFLAGS := -DDEBUG -g $(COMPILE_FLAGS)
-debug : all
 
 clean:
 	rm TAGS
